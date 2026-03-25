@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBIRT Prenatal Screening — UArizona College of Medicine Phoenix</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-dark: #0a4a3a;
+    --green-mid: #1a6b56;
+    --green: #1D9E75;
+    --green-light: #d0f0e4;
+    --green-pale: #f0faf6;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --text: #111;
+    --text-mid: #4b5563;
+    --text-light: #9ca3af;
+    --border: #e5e7eb;
+    --bg: #f9fafb;
+    --white: #ffffff;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .app-shell {
+    max-width: 680px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--white);
+    box-shadow: 0 0 60px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-header {
+    background: var(--green-dark);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-icon svg { width: 20px; height: 20px; }
+
+  .header-text h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: white;
+    font-weight: 400;
+  }
+
+  .header-text p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 1px;
+  }
+
+  .progress-container {
+    padding: 0 28px;
+    background: var(--green-dark);
+    padding-bottom: 20px;
+  }
+
+  .progress-steps {
+    display: flex;
+    gap: 4px;
+  }
+
+  .progress-step {
+    height: 3px;
+    flex: 1;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    transition: background 0.4s;
+  }
+
+  .progress-step.done { background: var(--green); }
+  .progress-step.active { background: rgba(255,255,255,0.7); }
+
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  .screen-body { padding: 28px; flex: 1; }
+
+  .screen-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .screen-sub {
+    font-size: 14px;
+    color: var(--text-mid);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  .section-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    background: var(--green-pale);
+    border: 1px solid var(--green-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .question-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .opt-btn {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-mid);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .opt-btn::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: white;
+    transition: all 0.15s;
+  }
+
+  .opt-btn:hover { border-color: var(--green); color: var(--text); }
+  .opt-btn:hover::before { border-color: var(--green); }
+
+  .opt-btn.selected {
+    border-color: var(--green);
+    background: var(--green-pale);
+    color: var(--green-dark);
+    font-weight: 500;
+  }
+
+  .opt-btn.selected::before {
+    border-color: var(--green);
+    background: var(--green);
+    box-shadow: inset 0 0 0 3px white;
+  }
+
+  .screen-footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    background: white;
+  }
+
+  .btn-primary {
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex: 1;
+  }
+
+  .btn-primary:hover { background: var(--green-mid); }
+  .btn-primary:disabled { background: var(--text-light); cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-mid);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-ghost:hover { border-color: var(--text-mid); color: var(--text); }
+
+  .disclaimer {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border);
+  }
+
+  /* Results */
+  .risk-banner {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .risk-banner.low { background: var(--green-pale); border: 1px solid var(--green-light); }
+  .risk-banner.moderate { background: var(--amber-light); border: 1px solid #fcd34d; }
+  .risk-banner.high { background: var(--red-light); border: 1px solid #fca5a5; }
+
+  .risk-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .risk-banner.low .risk-icon { background: var(--green-light); }
+  .risk-banner.moderate .risk-icon { background: #fde68a; }
+  .risk-banner.high .risk-icon { background: #fca5a5; }
+
+  .risk-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .risk-banner.low .risk-label { color: var(--green-mid); }
+  .risk-banner.moderate .risk-label { color: var(--amber); }
+  .risk-banner.high .risk-label { color: var(--red); }
+
+  .risk-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); }
+
+  .score-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .score-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    text-align: center;
+  }
+
+  .score-val { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); }
+  .score-lbl { font-size: 11px; color: var(--text-light); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .result-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .result-card-header {
+    background: var(--bg);
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .result-card-body { padding: 16px 18px; }
+
+  .result-card-body p {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.65;
+  }
+
+  .referral-item {
+    display: flex;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .referral-item:last-child { border-bottom: none; }
+
+  .ref-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .ref-dot.green { background: var(--green); }
+  .ref-dot.amber { background: var(--amber); }
+  .ref-dot.red { background: var(--red); }
+
+  .ref-text { font-size: 14px; color: var(--text-mid); line-height: 1.55; }
+  .ref-name { font-weight: 500; color: var(--text); }
+
+  .note-box {
+    background: #1e293b;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .copy-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .copy-btn:hover { background: var(--bg); color: var(--text); }
+  .copy-btn.copied { color: var(--green-mid); border-color: var(--green-light); }
+
+  .ua-footer {
+    background: var(--green-dark);
+    padding: 16px 28px;
+    text-align: center;
+  }
+
+  .ua-footer p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 480px) {
+    .screen-body { padding: 20px; }
+    .screen-footer { padding: 16px 20px; }
+    .app-header { padding: 16px 20px; }
+    .progress-container { padding: 0 20px 16px; }
+    .score-val { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <div class="app-header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>SBIRT Prenatal Screening</h1>
+      <p>UA College of Medicine – Phoenix · For clinical provider use</p>
+    </div>
+  </div>
+
+  <div class="progress-container">
+    <div class="progress-steps">
+      <div class="progress-step active" id="ps1"></div>
+      <div class="progress-step" id="ps2"></div>
+      <div class="progress-step" id="ps3"></div>
+      <div class="progress-step" id="ps4"></div>
+    </div>
+  </div>
+
+  <!-- Screen 1: Pre-screen -->
+  <div class="screen active" id="screen-1">
+    <div class="screen-body">
+      <h2 class="screen-title">Universal pre-screen</h2>
+      <p class="screen-sub">Two quick questions for all pregnant patients at every prenatal visit.</p>
+
+      <div class="card">
+        <div class="section-pill">Alcohol</div>
+        <div class="question-text">In the past year, have you had any drinks containing alcohol?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'pre_alc','no')">No</button>
+          <button class="opt-btn" onclick="pick(this,'pre_alc','yes')">Yes</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">Substances</div>
+        <div class="question-text">In the past year, have you used tobacco, marijuana, or any other drugs?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'pre_drug','no')">No</button>
+          <button class="opt-btn" onclick="pick(this,'pre_drug','yes')">Yes</button>
+        </div>
+      </div>
+
+      <div class="disclaimer">This screening tool uses the validated T-ACE and 4P's Plus protocols. For use by licensed clinical providers only. Results do not replace clinical judgment.</div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn-primary" onclick="fromPrescreen()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: T-ACE -->
+  <div class="screen" id="screen-2">
+    <div class="screen-body">
+      <h2 class="screen-title">T-ACE alcohol screening</h2>
+      <p class="screen-sub">Validated for alcohol use in pregnancy (Sokol et al., 1989). Score ≥2 indicates risk.</p>
+
+      <div class="card">
+        <div class="section-pill">T — Tolerance</div>
+        <div class="question-text">How many drinks does it take to make you feel high?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'tace_t','low')">1–2 drinks (0 points)</button>
+          <button class="opt-btn" onclick="pick(this,'tace_t','high')">3 or more drinks (2 points)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">A — Annoyed</div>
+        <div class="question-text">Have people annoyed you by criticizing your drinking?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'tace_a','no')">No (0 points)</button>
+          <button class="opt-btn" onclick="pick(this,'tace_a','yes')">Yes (1 point)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">C — Cut down</div>
+        <div class="question-text">Have you ever felt you should cut down on your drinking?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'tace_c','no')">No (0 points)</button>
+          <button class="opt-btn" onclick="pick(this,'tace_c','yes')">Yes (1 point)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">E — Eye-opener</div>
+        <div class="question-text">Have you ever had a drink first thing in the morning to steady your nerves or get rid of a hangover?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'tace_e','no')">No (0 points)</button>
+          <button class="opt-btn" onclick="pick(this,'tace_e','yes')">Yes (1 point)</button>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn-ghost" onclick="goTo(1)">Back</button>
+      <button class="btn-primary" onclick="goTo(3)">Continue</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: Drug screening -->
+  <div class="screen" id="screen-3">
+    <div class="screen-body">
+      <h2 class="screen-title">Substance use screening</h2>
+      <p class="screen-sub">4P's Plus — validated for use in prenatal settings (Chasnoff et al.).</p>
+
+      <div class="card">
+        <div class="section-pill">Past use</div>
+        <div class="question-text">Before you knew you were pregnant, how often did you use alcohol?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'d_prealc','none')">Not at all</button>
+          <button class="opt-btn" onclick="pick(this,'d_prealc','some')">Occasionally</button>
+          <button class="opt-btn" onclick="pick(this,'d_prealc','freq')">Regularly</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">Marijuana</div>
+        <div class="question-text">Have you used marijuana in the past month?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'d_mj','no')">No</button>
+          <button class="opt-btn" onclick="pick(this,'d_mj','yes')">Yes</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">Prescription misuse</div>
+        <div class="question-text">Have you used prescription medications not prescribed to you, or differently than prescribed?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'d_rx','no')">No</button>
+          <button class="opt-btn" onclick="pick(this,'d_rx','yes')">Yes</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">Other substances</div>
+        <div class="question-text">Have you used any other drugs in the past year? (cocaine, heroin, methamphetamine, etc.)</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'d_illicit','no')">No</button>
+          <button class="opt-btn" onclick="pick(this,'d_illicit','yes')">Yes</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-pill">Partner use</div>
+        <div class="question-text">Does your partner currently use alcohol or drugs?</div>
+        <div class="options">
+          <button class="opt-btn" onclick="pick(this,'d_partner','no')">No</button>
+          <button class="opt-btn" onclick="pick(this,'d_partner','yes')">Yes</button>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn-ghost" onclick="goTo(2)">Back</button>
+      <button class="btn-primary" onclick="calcAndShow()">View results</button>
+    </div>
+  </div>
+
+  <!-- Screen 4: Results -->
+  <div class="screen" id="screen-4">
+    <div class="screen-body">
+      <h2 class="screen-title">Screening results</h2>
+      <p class="screen-sub">Provider review only — do not display directly to patient.</p>
+      <div id="results-content"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn-ghost" onclick="resetAll()">New screening</button>
+      <button class="btn-primary" onclick="window.print()">Print / save</button>
+    </div>
+  </div>
+
+  <div class="ua-footer">
+    <p>University of Arizona College of Medicine – Phoenix<br>Comprehensive Center for Pain &amp; Addiction · SBIRT Prenatal Screening Tool<br>Based on T-ACE (Sokol 1989) and 4P's Plus (Chasnoff 2005) validated protocols</p>
+  </div>
+</div>
+
+<script>
+const A = {};
+
+function pick(btn, key, val) {
+  A[key] = val;
+  const grp = btn.closest('.options');
+  grp.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function setProgress(step) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('ps' + i);
+    el.className = 'progress-step';
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
+}
+
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+  setProgress(n);
+  window.scrollTo(0, 0);
+}
+
+function fromPrescreen() {
+  if (!A['pre_alc'] || !A['pre_drug']) return;
+  if (A['pre_alc'] === 'yes') { goTo(2); }
+  else if (A['pre_drug'] === 'yes') {
+    ['tace_t','tace_a','tace_c','tace_e'].forEach(k => A[k] = 'no');
+    goTo(3);
+  } else {
+    ['tace_t','tace_a','tace_c','tace_e'].forEach(k => A[k] = 'no');
+    ['d_prealc','d_mj','d_rx','d_illicit','d_partner'].forEach(k => A[k] = 'none');
+    A['d_mj'] = 'no'; A['d_rx'] = 'no'; A['d_illicit'] = 'no'; A['d_partner'] = 'no';
+    calcAndShow();
+  }
+}
+
+function taceScore() {
+  let s = 0;
+  if (A['tace_t'] === 'high') s += 2;
+  if (A['tace_a'] === 'yes') s++;
+  if (A['tace_c'] === 'yes') s++;
+  if (A['tace_e'] === 'yes') s++;
+  return s;
+}
+
+function drugScore() {
+  let s = 0;
+  if (A['d_prealc'] === 'freq') s += 2;
+  else if (A['d_prealc'] === 'some') s += 1;
+  if (A['d_mj'] === 'yes') s++;
+  if (A['d_rx'] === 'yes') s += 2;
+  if (A['d_illicit'] === 'yes') s += 3;
+  if (A['d_partner'] === 'yes') s++;
+  return s;
+}
+
+function calcAndShow() {
+  const tace = taceScore();
+  const drug = drugScore();
+  let level = 'low';
+  if (tace >= 2 || drug >= 3) level = 'high';
+  else if (tace >= 1 || drug >= 1) level = 'moderate';
+  renderResults(tace, drug, level);
+  goTo(4);
+}
+
+function renderResults(tace, drug, level) {
+  const now = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  const meta = {
+    low:      { label: 'Low risk',      action: 'No referral needed',      icon: '✓' },
+    moderate: { label: 'Moderate risk', action: 'Brief intervention',      icon: '!' },
+    high:     { label: 'High risk',     action: 'Referral recommended',    icon: '!!' }
+  };
+
+  const bi = {
+    low: 'Reinforce abstinence during pregnancy. Acknowledge healthy choices. Provide educational materials on fetal alcohol spectrum disorders. Revisit at next prenatal visit.',
+    moderate: 'Use brief motivational interviewing techniques. Explore the patient\'s understanding of risks to the fetus. Set a reduction or abstinence goal collaboratively. Schedule a closer follow-up appointment within 2–4 weeks.',
+    high: 'Patient meets criteria for possible alcohol use disorder or substance use disorder. Respond without judgment. Explore readiness to change using motivational interviewing. A warm handoff to behavioral health is strongly recommended today if possible. Consider medication-assisted treatment evaluation.'
+  };
+
+  const refs = {
+    low: [
+      { color:'green', name:'Universal education', detail:'Provide FASD prevention materials at every visit. No referral indicated at this time.' }
+    ],
+    moderate: [
+      { color:'amber', name:'Maricopa County Behavioral Health Line', detail:'(602) 222-9444 · Available 24/7 for crisis support and referral coordination' },
+      { color:'amber', name:'Banner Health Perinatal Substance Use Program', detail:'Banner University Medical Center Phoenix · Outpatient evaluation available' },
+      { color:'amber', name:'AHCCCS Substance Use Treatment', detail:'Arizona Health Care Cost Containment System · Covered for Medicaid patients' }
+    ],
+    high: [
+      { color:'red', name:'CCPA — Comprehensive Center for Pain & Addiction', detail:'University of Arizona College of Medicine – Phoenix · Refer today if possible' },
+      { color:'red', name:'Dignity Health Prenatal Substance Use Program', detail:'St. Joseph\'s Hospital and Medical Center, Phoenix · Integrated OB + behavioral health' },
+      { color:'red', name:'Medication-Assisted Treatment evaluation', detail:'Buprenorphine preferred over methadone in pregnancy · Coordinate with OBGYN and addiction medicine' },
+      { color:'red', name:'Maricopa County Behavioral Health Line', detail:'(602) 222-9444 · 24/7 crisis and referral line' }
+    ]
+  };
+
+  const dotColors = { green:'var(--green)', amber:'var(--amber)', red:'var(--red)' };
+
+  const noteLines = [
+    `Date: ${now}`,
+    `T-ACE Score: ${tace}/5 (risk threshold ≥2)`,
+    `Substance Risk Score: ${drug}`,
+    `Overall Risk Level: ${meta[level].label}`,
+    `Action: ${meta[level].action}`,
+    ``,
+    `Brief Intervention:`,
+    bi[level],
+    ``,
+    `Referrals:`,
+    ...refs[level].map(r => `- ${r.name}: ${r.detail}`)
+  ].join('\n');
+
+  let html = `
+  <div class="risk-banner ${level}">
+    <div class="risk-icon">${level === 'low' ? '✓' : level === 'moderate' ? '△' : '⚠'}</div>
+    <div>
+      <div class="risk-label">${meta[level].label}</div>
+      <div class="risk-title">${meta[level].action}</div>
+    </div>
+  </div>
+
+  <div class="score-row">
+    <div class="score-box">
+      <div class="score-val">${tace}<span style="font-size:16px;color:#9ca3af">/5</span></div>
+      <div class="score-lbl">T-ACE score</div>
+    </div>
+    <div class="score-box">
+      <div class="score-val">${drug}</div>
+      <div class="score-lbl">Drug risk score</div>
+    </div>
+    <div class="score-box">
+      <div class="score-val" style="font-size:14px;padding-top:6px">${now}</div>
+      <div class="score-lbl">Screening date</div>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-card-header">Brief intervention — talking points</div>
+    <div class="result-card-body"><p>${bi[level]}</p></div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-card-header">Referral resources — Phoenix, AZ</div>
+    <div class="result-card-body">
+      ${refs[level].map(r => `
+        <div class="referral-item">
+          <div class="ref-dot ${r.color}"></div>
+          <div class="ref-text"><span class="ref-name">${r.name}</span><br>${r.detail}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-card-header">Clinical note snippet</div>
+    <div class="result-card-body">
+      <div class="note-box" id="note-text">${noteLines}</div>
+      <div class="copy-row">
+        <button class="copy-btn" id="copy-btn" onclick="copyNote('${encodeURIComponent(noteLines)}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy to clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">T-ACE: sensitivity 69%, specificity 89% for alcohol-exposed pregnancy risk. Drug risk score is a composite indicator — not a standalone validated scale. All results must be interpreted by a licensed clinician. Arizona law does not criminalize prenatal substance use alone; mandatory reporting obligations apply to child safety concerns post-birth.</div>`;
+
+  document.getElementById('results-content').innerHTML = html;
+}
+
+function copyNote(encoded) {
+  const text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy to clipboard';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function resetAll() {
+  Object.keys(A).forEach(k => delete A[k]);
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('results-content').innerHTML = '';
+  goTo(1);
+}
+</script>
+</body>
+</html>
